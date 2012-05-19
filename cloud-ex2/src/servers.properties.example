@@ -1,0 +1,5 @@
+jdbc.url=jdbc:mysql://mydbinstance.XXXX.us-east-1.rds.amazonaws.com:3306/mydb
+jdbc.username=USPASSWORD
+
+elasticache.host=myec.XXXX.use1.cache.amazonaws.com
+elasticache.port=11211

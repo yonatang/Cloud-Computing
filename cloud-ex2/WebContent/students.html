@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Students</title>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/jquery.ui.js"></script>
+<script type="text/javascript" src="js/jquery.form.js"></script>
+<script type="text/javascript">
+	var verify = function(ticket, id, tryNum) {
+		//todo growl
+		var msg = "We have issues updating the request for student id " + id
+				+ ". Please try again.";
+		if (tryNum > 30) {
+			alert(msg);
+			return;
+		}
+		$.ajax({
+			url : "r/students/ticket/" + ticket,
+			data : null,
+			success : function(data) {
+				if (data.succeeded) {
+					var status = data.value;
+					if (status == "FAILED") {
+						console.log(ticket + " FAILED");
+						alert(msg);
+					} else if (status == "DONE") {
+						console.log(ticket + " DONE");
+					} else {
+						console.log(ticket + " WAIT");
+						setTimeout(function() {
+							verify(ticket, id, tryNum + 1);
+						}, 1000);
+					}
+				} else {
+					console.log(ticket + " ERR");
+					setTimeout(function() {
+						verify(ticket, id, tryNum + 1);
+					}, 1000);
+				}
+			}
+
+		});
+	};
+
+	$(function() {
+		$("#btnAvg").click(function() {
+			$("#btnAvg").attr("disabled", "disabled");
+			$.ajax({
+				url : "r/students/average",
+				data : null,
+				success : function(data) {
+					if (data.succeeded) {
+						$("#average").text(data.value);
+					} else {
+						alert('Error getting average: ' + data.reason);
+					}
+				},
+				error : function() {
+					alert("Something really messed up.");
+				},
+				complete : function() {
+					$("#btnAvg").removeAttr("disabled");
+				}
+			});
+		});
+
+		//todo validation
+		$("#gradeForm").ajaxForm({
+			clearForm : true,
+			success : function(data) {
+				if (!data.succeeded) {
+					alert("Error! problem with saving: " + data.reason);
+				} else {
+					//todo real ID here
+					verify(data.value, "ID", 0);
+					//todo growl
+					//alert('thx');
+				}
+
+			},
+			error : function() {
+				alert("bad things happens");
+			}
+
+		});
+	});
+</script>
+</head>
+
+<body>
+	<input type="button" value="Get current average" id="btnAvg" />
+	<label>Average</label>
+	<span id="average"></span>
+	<form id="gradeForm" method="POST"
+		enctype="application/x-www-form-urlencoded" action="r/students/update">
+		<label for="studentId">Student ID</label> <input name="studentId"
+			id="studentId" /> <label for="grade">Grade</label> <input
+			name="grade" id="grade" /> <input type="submit"
+			value="Update student grade1" />
+	</form>
+</body>
+</html>

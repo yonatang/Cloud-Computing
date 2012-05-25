@@ -1,7 +1,7 @@
 package idc.cloud.ex2.rest;
 
 import idc.cloud.ex2.BusinessLogic;
-import idc.cloud.ex2.cache.TicketStatus;
+import idc.cloud.ex2.TicketStatus;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;

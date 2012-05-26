@@ -3,9 +3,21 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Students</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+body {
+	background: #222 url(images/forest.jpg);
+	color: #fff;
+	background-size: 100%;
+}
+</style>
+
+<link rel="stylesheet" type="text/css" href="styles/jquery.gritter.css" />
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery.ui.js"></script>
 <script type="text/javascript" src="js/jquery.form.js"></script>
+<script type="text/javascript" src="js/jquery.gritter.min.js"></script>
+
 <script type="text/javascript">
 	var verify = function(ticket, id, tryNum) {
 		//todo growl
@@ -15,32 +27,45 @@
 			alert(msg);
 			return;
 		}
-		$.ajax({
-			url : "r/students/ticket/" + ticket,
-			data : null,
-			success : function(data) {
-				if (data.succeeded) {
-					var status = data.value;
-					if (status == "FAILED") {
-						console.log(ticket + " FAILED");
-						alert(msg);
-					} else if (status == "DONE") {
-						console.log(ticket + " DONE");
-					} else {
-						console.log(ticket + " WAIT");
-						setTimeout(function() {
-							verify(ticket, id, tryNum + 1);
-						}, 1000);
+		$
+				.ajax({
+					url : "r/students/ticket/" + ticket,
+					data : null,
+					success : function(data) {
+						if (data.succeeded) {
+							var status = data.value;
+							if (status == "FAILED") {
+								$.gritter
+										.add({
+											title : "Failed",
+											text : "Student "
+													+ id
+													+ " wasn't saved properly. Please add it again",
+											sticky : true
+										});
+							} else if (status == "DONE") {
+								$.gritter.add({
+									title : "Success",
+									text : "Student " + id
+											+ " added succesfully",
+									time : 1000
+								});
+								console.log(ticket + " DONE");
+							} else {
+								console.log(ticket + " WAIT");
+								setTimeout(function() {
+									verify(ticket, id, tryNum + 1);
+								}, 1000);
+							}
+						} else {
+							console.log(ticket + " ERR");
+							setTimeout(function() {
+								verify(ticket, id, tryNum + 1);
+							}, 1000);
+						}
 					}
-				} else {
-					console.log(ticket + " ERR");
-					setTimeout(function() {
-						verify(ticket, id, tryNum + 1);
-					}, 1000);
-				}
-			}
 
-		});
+				});
 	};
 
 	$(function() {
@@ -65,17 +90,69 @@
 			});
 		});
 
-		//todo validation
+		var formId;
+		$("#submit").click(function() {
+			var $id = $("#studentId");
+			var $grade = $("#grade");
+			$id.val($.trim($id.val()));
+			$grade.val($.trim($grade.val()));
+			var grade = $grade.val();
+			var id = $id.val();
+			var numReg = new RegExp("^[0-9]+$");
+
+			if (!grade) {
+				alert("Please fill in a grade");
+				$grade.focus();
+				return false;
+			}
+			if (!id) {
+				alert("Please fill in an ID");
+				$id.focus();
+				return false;
+			}
+
+			if (!numReg.test(grade)) {
+				alert("Grade should be an integer number");
+				$grade.focus();
+				$grade.select();
+				return false;
+			}
+			if (!numReg.test(id)) {
+				alert("Student id should be an integer number");
+				$id.focus();
+				$id.select();
+				return false;
+			}
+			if (grade > 100) {
+				alert("Grade should be <=100");
+				$grade.focus();
+				$grade.select();
+				return false;
+			}
+			if (grade < 0) {
+				alert("Grade should be >=0");
+				$grade.focus();
+				$grade.select();
+				return false;
+			}
+			if (id <= 0) {
+				alert("ID should be >0");
+				$id.focus();
+				$id.select();
+				return false;
+			}
+			formId = id;
+			return true;
+		});
+
 		$("#gradeForm").ajaxForm({
 			clearForm : true,
 			success : function(data) {
 				if (!data.succeeded) {
 					alert("Error! problem with saving: " + data.reason);
 				} else {
-					//todo real ID here
-					verify(data.value, "ID", 0);
+					verify(data.value, formId, 0);
 					//todo growl
-					//alert('thx');
 				}
 
 			},
@@ -87,17 +164,57 @@
 	});
 </script>
 </head>
+<style>
+.alpha60 { /* Fallback for web browsers that doesn't support RGBa */
+	background: rgb(0, 0, 0);
+	/* RGBa with 0.6 opacity */
+	background: rgba(0, 0, 0, 0.8); 
+}
+
+.form-item {
+	color: #EEEEEE;
+	display: block;
+	font-family: verdana;
+	font-size: 11px;
+	padding: 20px;
+	margin: 30px;
+}
+</style>
 
 <body>
-	<input type="button" value="Get current average" id="btnAvg" />
-	<label>Average</label>
-	<span id="average"></span>
-	<form id="gradeForm" method="POST"
-		enctype="application/x-www-form-urlencoded" action="r/students/update">
-		<label for="studentId">Student ID</label> <input name="studentId"
-			id="studentId" /> <label for="grade">Grade</label> <input
-			name="grade" id="grade" /> <input type="submit"
-			value="Update student grade1" />
-	</form>
+	<div class="alpha60 form-item">
+		<div style="margin-bottom: 20px; font-size: 3em;">Current
+			average</div>
+		<span style="margin-right: 10px"> <input type="button"
+			value="Get!" id="btnAvg" />
+		</span> <span> <span id="average"
+			style="font-size: 2em; border: solid thin white; padding: 10px; min-width: 50px;">?</span>
+		</span>
+	</div>
+	<div class="alpha60 form-item">
+		<div style="margin-bottom: 20px; font-size: 3em;">Update student
+			grade</div>
+		<form id="gradeForm" method="POST"
+			enctype="application/x-www-form-urlencoded"
+			action="r/students/update">
+			<div style="margin-bottom: 10px;">
+				<span style="margin-right: 10px;"> <label for="studentId"
+					style="margin-right: 10px;">Student ID</label> <input
+					name="studentId" id="studentId" />
+				</span> <span style="margin-right: 10px;"> <label for="grade"
+					style="margin-right: 10px;">Grade</label> <input name="grade"
+					id="grade" />
+				</span>
+			</div>
+			<div>
+				<input type="submit" id="submit" value="Update!" />
+			</div>
+		</form>
+	</div>
+	<div class="alpha60 form-item">
+		<div style="margin-bottom: 20px; font-size: 3em;">About</div>
+		<div>Yonatan Graber</div>
+	</div>
+	<span style="background: black;"  class='. form-item'>Please view in Firefox, Chrome or Safary.</span>
 </body>
 </html>

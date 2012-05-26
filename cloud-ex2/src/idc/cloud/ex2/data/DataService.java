@@ -435,10 +435,12 @@ public class DataService {
 						}
 						conn.commit();
 						client.set(TICKET_KEY + ticket, 120, TicketStatus.DONE);
+						log.info("Ticket " + ticket + " is done: " + id + " " + studentData);
 						return;
 					} catch (Exception e) {
 						if (retry > 5) {
-							log.error("Couldn't update database with data of " + id + " " + studentData);
+							log.error("Ticket " + ticket + " couldn't update database with data of " + id + " "
+									+ studentData);
 							client.set(TICKET_KEY + ticket, 120, TicketStatus.FAILED);
 							// update ticket;
 						}

@@ -1,10 +1,7 @@
 package idc.cloud.ex2;
 
-import idc.cloud.ex2.data.DataService;
-
 import java.util.Random;
 
-import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -18,14 +15,13 @@ import com.thimbleware.jmemcached.MemCacheDaemon;
 public class BusinessLogicTest {
 
 	private BusinessLogic bl;
-
+	private Random random = new Random();
 	MemCacheDaemon<LocalCacheElement> daemon;
 
 	@BeforeClass
 	void setupCacheServer() {
 		int port1 = new Random().nextInt(40000) + 10000;
 		daemon = TestUtils.getCacheServer(port1);
-
 		daemon.start();
 
 		System.setProperty("PARAM1", "localhost:" + port1);
@@ -39,26 +35,20 @@ public class BusinessLogicTest {
 
 	@BeforeMethod
 	void setup() throws Exception {
-		TestUtils.clearCache();
-		TestUtils.cleanDb();
 		bl = BusinessLogic.instance();
-		new DataService();
 	}
 
 	public void shouldInsertFast() throws Exception {
+		// First one might be slow (cache misses)
 		bl.addStudent(12345, 80);
 		long now = System.currentTimeMillis();
-		// First one is slow
-		String ticket = bl.addStudent(12346, 80);
-		while (bl.checkTicket(ticket) == TicketStatus.PROCESSING) {
-			Thread.yield();
-		}
+
+		bl.addStudent(12346, 80);
 		long duration = System.currentTimeMillis() - now;
 		Assert.assertTrue(duration < 90);
 	}
 
-	public void shouldWorkWithNoDuplicationsCleanDb() throws Exception {
-		final Random random = new Random();
+	public void shouldAddPlanty() throws Exception {
 		final int amount = 1000;
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < amount; i++) {
@@ -68,12 +58,10 @@ public class BusinessLogicTest {
 		}
 		long duration = System.currentTimeMillis() - now;
 		Thread.sleep(1000);
-
 		summary(amount, duration);
 	}
 
 	public void shouldWorkWithNoDupFailedConn() throws Exception {
-		final Random random = new Random();
 		final int amount = 1000;
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < amount; i++) {
@@ -123,7 +111,6 @@ public class BusinessLogicTest {
 	}
 
 	public void shouldWorkWithRandomInserts() throws Exception {
-		final Random random = new Random();
 		final int amount = 1000;
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < amount; i++) {
@@ -137,7 +124,6 @@ public class BusinessLogicTest {
 	}
 
 	public void shouldRecoverFromCacheDisconnection() throws Exception {
-		final Random random = new Random();
 		final int amount = 5;
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < amount; i++) {
@@ -146,7 +132,6 @@ public class BusinessLogicTest {
 			bl.addStudent(id, grade);
 		}
 		Thread.sleep(1000);
-		Logger.getRootLogger().info("!!!!!!!!! Restarting the cache");
 		daemon.stop();
 		daemon.start();
 		for (int i = 0; i < amount; i++) {
@@ -166,7 +151,7 @@ public class BusinessLogicTest {
 		long oldid = -1;
 		for (int j = 0; j < 2; j++) {
 			for (int i = 0; i < amount; i++) {
-				int grade = i + (j * 50); // random.nextInt(101);
+				int grade = i + (j * 50);
 				long id = 10000 + i;
 				if (i == 25) {
 					id = oldid;

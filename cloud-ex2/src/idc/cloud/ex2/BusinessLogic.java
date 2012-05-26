@@ -2,11 +2,12 @@ package idc.cloud.ex2;
 
 import idc.cloud.ex2.data.DataService;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class BusinessLogic {
 	private static Object[] lock = new Object[0];
-	private static Logger log = Logger.getLogger(BusinessLogic.class);
+	private static Log log = LogFactory.getLog(BusinessLogic.class); // Logger.getLogger(BusinessLogic.class.getName());
 
 	private DataService dataService;
 

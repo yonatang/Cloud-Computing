@@ -11,15 +11,16 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 @Path("/students")
 public class RestService {
-	private static final Logger log = Logger.getLogger(RestService.class);
+	private static Log log = LogFactory.getLog(RestService.class);
 	private final BusinessLogic bl = BusinessLogic.instance();
 
 	@GET
-	@Path("average")
+	@Path("average/{RANDOM}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getAverage() {
 		log.info("Get average");
@@ -47,8 +48,9 @@ public class RestService {
 		}
 	}
 
+	// Random is needed due to IE caching.
 	@GET
-	@Path("ticket/{ID}")
+	@Path("ticket/{ID}/{RANDOM}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getTicketStatus(@PathParam("ID") String ticket) {
 		TicketStatus ticketStatus = null;

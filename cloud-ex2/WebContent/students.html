@@ -19,60 +19,56 @@ body {
 <script type="text/javascript" src="js/jquery.gritter.min.js"></script>
 
 <script type="text/javascript">
+	var random=function(){
+		return ""+Math.round(Math.random(1)*1000000);
+	}
 	var verify = function(ticket, id, tryNum) {
-		//todo growl
-		var msg = "We have issues updating the request for student id " + id
-				+ ". Please try again.";
+		
+		var showErr=function(){
+			$.gritter.add({
+				title : "Failed",
+				text : "Student " + id + " wasn't saved properly. Please add it again",
+				sticky : true
+			});
+		}
 		if (tryNum > 30) {
-			alert(msg);
+			showErr();
 			return;
 		}
-		$
-				.ajax({
-					url : "r/students/ticket/" + ticket,
-					data : null,
-					success : function(data) {
-						if (data.succeeded) {
-							var status = data.value;
-							if (status == "FAILED") {
-								$.gritter
-										.add({
-											title : "Failed",
-											text : "Student "
-													+ id
-													+ " wasn't saved properly. Please add it again",
-											sticky : true
-										});
-							} else if (status == "DONE") {
-								$.gritter.add({
-									title : "Success",
-									text : "Student " + id
-											+ " added succesfully",
-									time : 1000
-								});
-								console.log(ticket + " DONE");
-							} else {
-								console.log(ticket + " WAIT");
-								setTimeout(function() {
-									verify(ticket, id, tryNum + 1);
-								}, 1000);
-							}
-						} else {
-							console.log(ticket + " ERR");
-							setTimeout(function() {
-								verify(ticket, id, tryNum + 1);
-							}, 1000);
-						}
+		$.ajax({
+			url : "r/students/ticket/" + ticket+"/"+random(),
+			data : null,
+			success : function(data) {
+				if (data.succeeded) {
+					var status = data.value;
+					if (status == "FAILED") {
+						showErr();
+					} else if (status == "DONE") {
+						$.gritter.add({
+							title : "Success",
+							text : "Student " + id + " added succesfully",
+							time : 1000
+						});
+					} else {
+						setTimeout(function() {
+							verify(ticket, id, tryNum + 1);
+						}, 1000);
 					}
+				} else {
+					setTimeout(function() {
+						verify(ticket, id, tryNum + 1);
+					}, 1000);
+				}
+			}
 
-				});
+		});
 	};
 
 	$(function() {
 		$("#btnAvg").click(function() {
 			$("#btnAvg").attr("disabled", "disabled");
 			$.ajax({
-				url : "r/students/average",
+				url : "r/students/average/"+random(),
 				data : null,
 				success : function(data) {
 					if (data.succeeded) {
@@ -142,6 +138,7 @@ body {
 				return false;
 			}
 			formId = id;
+			$id.focus();
 			return true;
 		});
 
@@ -168,7 +165,10 @@ body {
 .alpha60 { /* Fallback for web browsers that doesn't support RGBa */
 	background: rgb(0, 0, 0);
 	/* RGBa with 0.6 opacity */
-	background: rgba(0, 0, 0, 0.8); 
+	background: rgba(0, 0, 0, 0.8);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#CC000000,
+		endColorstr=#CC000000 ); /* IE6–IE9 */
+	zoom: 1;
 }
 
 .form-item {
@@ -188,7 +188,7 @@ body {
 		<span style="margin-right: 10px"> <input type="button"
 			value="Get!" id="btnAvg" />
 		</span> <span> <span id="average"
-			style="font-size: 2em; border: solid thin white; padding: 10px; min-width: 50px;">?</span>
+			style="font-size: 2em; border: solid thin white; padding: 10px; display: inline-block; width: 150px;">?</span>
 		</span>
 	</div>
 	<div class="alpha60 form-item">
@@ -215,6 +215,5 @@ body {
 		<div style="margin-bottom: 20px; font-size: 3em;">About</div>
 		<div>Yonatan Graber</div>
 	</div>
-	<span style="background: black;"  class='. form-item'>Please view in Firefox, Chrome or Safary.</span>
 </body>
 </html>

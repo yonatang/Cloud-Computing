@@ -28,14 +28,16 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.google.common.base.Preconditions;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mysql.jdbc.Driver;
 
 public class DataService {
-	private static final Logger log = Logger.getLogger(DataService.class);
+	private static Log log = LogFactory.getLog(DataService.class);
+	// private static final Logger log = Logger.getLogger(DataService.class);
 
 	private static final StudentTranscoder STUDENT_TRANSCODER = new StudentTranscoder();
 	private static final AverageTranscoder AVERAGE_TRANSCODER = new AverageTranscoder();
